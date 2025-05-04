@@ -1,0 +1,26 @@
+@startuml
+skinparam monochrome true
+skinparam defaultFontName Courier
+skinparam rectangle {
+  BorderColor black
+  BackgroundColor white
+  RoundCorner 0
+}
+
+top to bottom direction
+
+rectangle "Python-уровень\nhl.filter_entries(mt.GT.is_het() & (mt.DP > 10))" as python
+
+rectangle "AST (Abstract Syntax Tree)\n(AND (is_het GT) (> DP 10))" as ast 
+
+rectangle "Janino (JVM-уровень)\npublic boolean filter() {\n  return call.isHet() && dp > 10;\n}" as janino
+
+rectangle "LLVM IR\ndefine i1 @filter(...) {\n  %1 = call @is_het(...)\n  %2 = icmp sgt i32 %dp, 10\n  %3 = and i1 %1, %2\n  ret i1 %3\n}" as llvm
+
+rectangle "Машинный код (x86-64)\n0x00: test   dil, dil\n0x03: jle    0x0f\n0x05: cmp    esi, 10\n0x08: setg   al\n0x0b: ret" as machine
+
+python --> ast : через Py4J
+ast --> janino
+janino --> llvm : JIT-компиляция
+llvm --> machine : оптимизации
+@enduml
